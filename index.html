@@ -31,7 +31,7 @@
       </div>
       <div class="p-4 flex-1">
         <nav class="space-y-1">
-          <a href="#" onclick="showSection('students'); toggleSidebar()" class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium">
+          <a href="#" onclick="toggleSidebar()" class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium">
             <i class="fa-solid fa-users w-5"></i>
             <span>Student List</span>
           </a>
@@ -129,7 +129,7 @@
 
     let students = [];
 
-    // Real-time listener
+    // Real-time updates from Firebase
     studentsCollection.onSnapshot((snapshot) => {
       students = [];
       snapshot.forEach(doc => {
@@ -138,20 +138,18 @@
       renderStudentsTable();
     });
 
-    // Auto-seed default students if collection is empty
-    async function seedDefaultStudents() {
+    // Seed default students only once
+    async function seedDefaultStudentsIfNeeded() {
       const snapshot = await studentsCollection.get();
       if (snapshot.empty) {
-        const defaultStudents = [
+        const defaults = [
           { name: "សុំ ឡាទីន", gender: "Male", age: 15, phone: "095 524158", pob_village: "ស្រះឈូកលិច", pob_commune: "ស្រះជីក", pob_district: "ភ្នំស្រុក", pob_province: "ប/ជ", father_name: "សុំ ម៉ៃ", mother_name: "យឿង សុភា", current_village: "ស្រះឈូកលិច", current_commune: "ស្រះជីក", current_district: "ភ្នំស្រុក", current_province: "ប/ជ", in_time: null, out_time: null, in_signature: null, out_signature: null },
           { name: "សួង រាត្រី", gender: "Male", age: 15, phone: "097 2668900", pob_village: "មាត់ស្រះ", pob_commune: "ស្រះជីក", pob_district: "ភ្នំស្រុក", pob_province: "ប/ជ", father_name: "មិត្ត ស្រៀង", mother_name: "ផៃ សុផាប", current_village: "មាត់ស្រះ", current_commune: "ស្រះជីក", current_district: "ភ្នំស្រុក", current_province: "ប/ជ", in_time: null, out_time: null, in_signature: null, out_signature: null },
           { name: "សឿត សំណាង", gender: "Male", age: 15, phone: "071 5459700", pob_village: "ពន្លៃ", pob_commune: "ភ្នំដី", pob_district: "ភ្នំស្រុក", pob_province: "ប/ជ", father_name: "សឿត ម៉ានា", mother_name: "កេត ចាំ", current_village: "ពន្លៃ", current_commune: "ភ្នំដី", current_district: "ភ្នំស្រុក", current_province: "ប/ជ", in_time: null, out_time: null, in_signature: null, out_signature: null }
         ];
-
-        for (let student of defaultStudents) {
-          await studentsCollection.add(student);
+        for (let s of defaults) {
+          await studentsCollection.add(s);
         }
-        console.log("Default students added to Firebase");
       }
     }
 
@@ -310,7 +308,7 @@
     async function init() {
       updateDate();
       updateLiveClock();
-      await seedDefaultStudents(); // Auto add students if empty
+      await seedDefaultStudentsIfNeeded();
     }
 
     window.onload = init;

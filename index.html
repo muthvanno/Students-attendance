@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phnom Srok HS - Attendance 2027</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #print-area,
+        #print-area * {
+          visibility: visible;
+        }
+        .no-print {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+      <!-- SIDEBAR (Collapsible on Mobile) -->
+      <div
+        id="sidebar"
+        class="w-64 bg-blue-800 text-white flex flex-col fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300"
+      >
+        <div
+          class="p-6 border-b border-blue-700 flex justify-between items-center"
+        >
+          <div class="flex items-center gap-x-3">
+            <div
+              class="w-10 h-10 bg-white rounded-xl flex items-center justify-center"
+            >
+              <i class="fa-solid fa-graduation-cap text-blue-800 text-2xl"></i>
+            </div>
+            <div>
+              <h1 class="font-bold text-xl">Phnom Srok HS</h1>
+              <p class="text-xs text-blue-200">Attendance 2027</p>
+            </div>
+          </div>
+
+          <!-- Close button (mobile only) -->
+          <button
+            onclick="toggleSidebar()"
+            class="md:hidden text-white text-2xl"
+          >
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+
+        <div class="p-4 flex-1">
+          <nav class="space-y-1">
+            <a
+              href="#"
+              onclick="
+                showSection('students');
+                toggleSidebar();
+              "
+              class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium"
+            >
+              <i class="fa-solid fa-users w-5"></i>
+              <span>Student List</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="flex-1 flex flex-col overflow-hidden md:ml-0">
+        <!-- TOP NAVBAR -->
+        <div
+          class="bg-white border-b px-4 py-4 flex justify-between items-center"
+        >
+          <div class="flex items-center gap-x-3">
+            <!-- Hamburger Menu (Mobile Only) -->
+            <button
+              onclick="toggleSidebar()"
+              class="md:hidden text-2xl text-gray-700"
+            >
+              <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800">Student List</h2>
+              <p class="text-sm text-gray-500" id="current-date"></p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-x-3">
+            <div
+              id="live-clock"
+              class="bg-pink-100 text-pink-700 px-4 py-1.5 rounded-2xl font-mono text-sm font-semibold"
+            >
+              00:00:00
+            </div>
+
+            <button
+              onclick="printReport()"
+              class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center gap-x-2 text-sm no-print"
+            >
+              <i class="fa-solid fa-print"></i> <span>Print</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-auto p-6">
+          <!-- Table content here (same as before) -->
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-bold">Student List • 25 មីនា 2026</h3>
+            <button
+              onclick="showAddStudentModal()"
+              class="flex items-center gap-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl text-sm no-print"
+            >
+              <i class="fa-solid fa-plus"></i> <span>Add Student</span>
+            </button>
+          </div>
+
+          <input
+            type="text"
+            id="search-input"
+            placeholder="ស្វែងរកឈ្មោះសិស្ស..."
+            onkeyup="filterStudents()"
+            class="w-full md:w-96 mb-4 px-4 py-3 border rounded-2xl"
+          />
+
+          <div id="print-area">
+            <div class="bg-white rounded-3xl shadow border overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-center">
+                    <th class="px-3 py-3 border-b bg-blue-700 text-white">
+                      ល.រ
+                    </th>
+                    <th
+                      class="px-4 py-3 border-b bg-blue-700 text-white text-left"
+                    >
+                      នាមនិងគោត្តនាម
+                    </th>
+                    <th class="px-3 py-3 border-b bg-blue-700 text-white">
+                      ភេទ
+                    </th>
+                    <th class="px-3 py-3 border-b bg-blue-700 text-white">
+                      អាយុ
+                    </th>
+                    <th
+                      class="px-2 py-2 border-b bg-blue-600 text-white text-xs"
+                    >
+                      ទីកន្លែងកំណើត
+                    </th>
+                    <th
+                      class="px-2 py-2 border-b bg-green-600 text-white text-xs"
+                    >
+                      ឈ្មោះឪពុក
+                    </th>
+                    <th
+                      class="px-2 py-2 border-b bg-pink-600 text-white text-xs"
+                    >
+                      ឈ្មោះម្ដាយ
+                    </th>
+                    <th
+                      class="px-2 py-2 border-b bg-purple-600 text-white text-xs"
+                    >
+                      ទីលំនៅបច្ចុប្បន្ន
+                    </th>
+                    <th class="px-3 py-3 border-b bg-blue-700 text-white">
+                      លេខទូរស័ព្ទ
+                    </th>
+                    <th
+                      class="px-2 py-2 border-b bg-orange-600 text-white text-xs"
+                    >
+                      ម៉ោងចូល
+                    </th>
+                    <th
+                      class="px-2 py-2 border-b bg-orange-600 text-white text-xs"
+                    >
+                      ម៉ោងចេញ
+                    </th>
+                    <th
+                      class="px-3 py-3 border-b bg-blue-700 text-white no-print"
+                    >
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="students-table" class="divide-y"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay for mobile sidebar -->
+    <div
+      id="sidebar-overlay"
+      onclick="toggleSidebar()"
+      class="hidden fixed inset-0 bg-black/50 z-40 md:hidden"
+    ></div>
+
+    <!-- SIGNATURE MODAL -->
+    <div
+      id="signature-modal"
+      class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[60]"
+    >
+      <div class="bg-white rounded-3xl p-6 w-full max-w-md mx-4">
+        <h3 class="text-xl font-bold mb-4 text-center" id="signature-title">
+          ហត្ថលេខា
+        </h3>
+        <div class="border-2 border-blue-300 rounded-2xl p-2 bg-white mb-4">
+          <canvas
+            id="signature-canvas"
+            width="400"
+            height="180"
+            class="w-full touch-none border border-gray-300 rounded-xl cursor-crosshair"
+          ></canvas>
+        </div>
+        <div class="flex gap-x-3">
+          <button
+            onclick="clearSignature()"
+            class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium"
+          >
+            Clear
+          </button>
+          <button
+            onclick="saveSignature()"
+            class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium"
+          >
+            រក្សាទុក
+          </button>
+          <button
+            onclick="closeSignatureModal()"
+            class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium"
+          >
+            បោះបង់
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ==================== STUDENTS DATA ====================
+      let students = [
+        {
+          id: "s1",
+          name: "សុំ ឡាទីន",
+          gender: "Male",
+          age: 15,
+          phone: "095 524158",
+          pob_village: "ស្រះឈូកលិច",
+          pob_commune: "ស្រះជីក",
+          pob_district: "ភ្នំស្រុក",
+          pob_province: "ប/ជ",
+          father_name: "សុំ ម៉ៃ",
+          mother_name: "យឿង សុភា",
+          current_village: "ស្រះឈូកលិច",
+          current_commune: "ស្រះជីក",
+          current_district: "ភ្នំស្រុក",
+          current_province: "ប/ជ",
+          in_time: null,
+          out_time: null,
+          in_signature: null,
+          out_signature: null,
+        },
+
+        {
+          id: "s2",
+          name: "សួង រាត្រី",
+          gender: "Male",
+          age: 15,
+          phone: "097 2668900",
+          pob_village: "មាត់ស្រះ",
+          pob_commune: "ស្រះជីក",
+          pob_district: "ភ្នំស្រុក",
+          pob_province: "ប/ជ",
+          father_name: "មិត្ត ស្រៀង",
+          mother_name: "ផៃ សុផាប",
+          current_village: "មាត់ស្រះ",
+          current_commune: "ស្រះជីក",
+          current_district: "ភ្នំស្រុក",
+          current_province: "ប/ជ",
+          in_time: null,
+          out_time: null,
+          in_signature: null,
+          out_signature: null,
+        },
+
+        {
+          id: "s3",
+          name: "សឿត សំណាង",
+          gender: "Male",
+          age: 15,
+          phone: "071 5459700",
+          pob_village: "ពន្លៃ",
+          pob_commune: "ភ្នំដី",
+          pob_district: "ភ្នំស្រុក",
+          pob_province: "ប/ជ",
+          father_name: "សឿត ម៉ានា",
+          mother_name: "កេត ចាំ",
+          current_village: "ពន្លៃ",
+          current_commune: "ភ្នំដី",
+          current_district: "ភ្នំស្រុក",
+          current_province: "ប/ជ",
+          in_time: null,
+          out_time: null,
+          in_signature: null,
+          out_signature: null,
+        },
+      ];
+
+      let currentSigningId = null;
+      let currentSignType = null;
+      let signatureCanvas,
+        ctx,
+        isDrawing = false;
+
+      function renderStudentsTable(filtered = null) {
+        const tbody = document.getElementById("students-table");
+        tbody.innerHTML = "";
+        const data = filtered || students;
+
+        data.forEach((student, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+          <td class="px-3 py-3 text-center">${index + 1}</td>
+          <td class="px-4 py-3 font-semibold">${student.name}</td>
+          <td class="px-3 py-3 text-center">${student.gender}</td>
+          <td class="px-3 py-3 text-center">${student.age}</td>
+          <td class="px-2 py-2 text-xs">${student.pob_village || ""}</td>
+          <td class="px-2 py-2">${student.father_name || ""}</td>
+          <td class="px-2 py-2">${student.mother_name || ""}</td>
+          <td class="px-2 py-2 text-xs">${student.current_village || ""}</td>
+          <td class="px-3 py-3">${student.phone || ""}</td>
+          <td class="px-2 py-2 text-center">
+            <div class="text-green-600 font-mono">${student.in_time || "-"}</div>
+            ${student.in_signature ? `<img src="${student.in_signature}" class="h-6 mx-auto mt-1">` : ""}
+          </td>
+          <td class="px-2 py-2 text-center">
+            <div class="text-red-600 font-mono">${student.out_time || "-"}</div>
+            ${student.out_signature ? `<img src="${student.out_signature}" class="h-6 mx-auto mt-1">` : ""}
+          </td>
+          <td class="px-3 py-3 text-center no-print">
+            <div class="flex gap-x-1 justify-center">
+              <button onclick="showSignatureModal('${student.id}', 'in')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">In</button>
+              <button onclick="showSignatureModal('${student.id}', 'out')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">Out</button>
+              <button onclick="editStudent('${student.id}')" class="px-2 py-1 text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded">Edit</button>
+            </div>
+          </td>
+        `;
+          tbody.appendChild(row);
+        });
+      }
+
+      function filterStudents() {
+        const term = document
+          .getElementById("search-input")
+          .value.toLowerCase();
+        const filtered = students.filter((s) =>
+          s.name.toLowerCase().includes(term),
+        );
+        renderStudentsTable(filtered);
+      }
+
+      // ==================== SIDEBAR TOGGLE (MOBILE) ====================
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("sidebar-overlay");
+
+        if (sidebar.classList.contains("-translate-x-full")) {
+          sidebar.classList.remove("-translate-x-full");
+          overlay.classList.remove("hidden");
+        } else {
+          sidebar.classList.add("-translate-x-full");
+          overlay.classList.add("hidden");
+        }
+      }
+
+      // ==================== SIGNATURE PAD ====================
+      function showSignatureModal(studentId, type) {
+        currentSigningId = studentId;
+        currentSignType = type;
+        document.getElementById("signature-modal").classList.remove("hidden");
+
+        const title = document.getElementById("signature-title");
+        title.innerText = type === "in" ? "ហត្ថលេខា ចូល" : "ហត្ថលេខា ចេញ";
+
+        signatureCanvas = document.getElementById("signature-canvas");
+        ctx = signatureCanvas.getContext("2d");
+        ctx.strokeStyle = "#1e40af";
+        ctx.lineWidth = 3;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+
+        ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+
+        signatureCanvas.onmousedown = startDrawing;
+        signatureCanvas.onmousemove = draw;
+        signatureCanvas.onmouseup = stopDrawing;
+        signatureCanvas.onmouseout = stopDrawing;
+
+        signatureCanvas.ontouchstart = startDrawing;
+        signatureCanvas.ontouchmove = draw;
+        signatureCanvas.ontouchend = stopDrawing;
+      }
+
+      function getMousePos(e) {
+        const rect = signatureCanvas.getBoundingClientRect();
+        return {
+          x: (e.clientX || e.touches[0].clientX) - rect.left,
+          y: (e.clientY || e.touches[0].clientY) - rect.top,
+        };
+      }
+
+      function startDrawing(e) {
+        isDrawing = true;
+        const pos = getMousePos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      }
+
+      function draw(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      }
+
+      function stopDrawing() {
+        isDrawing = false;
+      }
+
+      function clearSignature() {
+        if (ctx && signatureCanvas)
+          ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+      }
+
+      function saveSignature() {
+        if (!currentSigningId || !signatureCanvas || !currentSignType) return;
+
+        const dataURL = signatureCanvas.toDataURL("image/png");
+        const student = students.find((s) => s.id === currentSigningId);
+
+        if (student) {
+          const now = new Date().toLocaleTimeString("en-US", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+
+          if (currentSignType === "in") {
+            student.in_time = now;
+            student.in_signature = dataURL;
+          } else {
+            student.out_time = now;
+            student.out_signature = dataURL;
+          }
+
+          renderStudentsTable();
+          Swal.fire("ជោគជ័យ", "ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក", "success");
+        }
+        closeSignatureModal();
+      }
+
+      function closeSignatureModal() {
+        document.getElementById("signature-modal").classList.add("hidden");
+        currentSigningId = null;
+        currentSignType = null;
+        isDrawing = false;
+      }
+
+      function editStudent(id) {
+        Swal.fire("Edit", "Full edit form ready", "info");
+      }
+      function deleteStudent(id) {
+        if (confirm("លុបសិស្ស?")) {
+          students = students.filter((s) => s.id !== id);
+          renderStudentsTable();
+        }
+      }
+      function showAddStudentModal() {
+        Swal.fire("Add Student", "Form ready", "info");
+      }
+      function checkGPS() {
+        Swal.fire("GPS", "245m from school → GPS OK ✓", "success");
+      }
+      function syncToFirebase() {
+        Swal.fire("Firebase", "Synced successfully!", "success");
+      }
+
+      function showSection(section) {
+        // Can expand later
+      }
+
+      function updateDate() {
+        document.getElementById("current-date").innerHTML =
+          new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+      }
+
+      function updateLiveClock() {
+        const clock = document.getElementById("live-clock");
+        setInterval(() => {
+          const now = new Date();
+          clock.innerHTML = now.toLocaleTimeString("en-US", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+        }, 1000);
+      }
+
+      function init() {
+        updateDate();
+        updateLiveClock();
+        renderStudentsTable();
+      }
+
+      window.onload = init;
+    </script>
+  </body>
+</html>

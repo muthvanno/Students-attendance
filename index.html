@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
@@ -113,7 +113,7 @@
   </div>
 
   <script>
-    // ==================== FIREBASE CONFIG (REPLACE WITH YOURS) ====================
+    // ==================== FIREBASE CONFIG ====================
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -129,7 +129,7 @@
 
     let students = [];
 
-    // Listen to real-time updates from Firebase
+    // Real-time listener from Firebase
     studentsCollection.onSnapshot((snapshot) => {
       students = [];
       snapshot.forEach(doc => {
@@ -250,13 +250,8 @@
           updateData.out_signature = dataURL;
         }
 
-        try {
-          await studentsCollection.doc(currentSigningId).update(updateData);
-          Swal.fire('ជោគជ័យ', 'ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក', 'success');
-        } catch (error) {
-          console.error("Error updating signature:", error);
-          Swal.fire('Error', 'Failed to save signature', 'error');
-        }
+        await studentsCollection.doc(currentSigningId).update(updateData);
+        Swal.fire('ជោគជ័យ', 'ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក', 'success');
       }
       closeSignatureModal();
     }
@@ -270,9 +265,7 @@
 
     function editStudent(id) { Swal.fire('Edit', 'Full edit form ready', 'info'); }
     function deleteStudent(id) { 
-      if (confirm('លុបសិស្ស?')) { 
-        studentsCollection.doc(id).delete();
-      } 
+      if (confirm('លុបសិស្ស?')) studentsCollection.doc(id).delete();
     }
     function showAddStudentModal() { Swal.fire('Add Student', 'Form ready', 'info'); }
     function checkGPS() { Swal.fire('GPS', '245m from school → GPS OK ✓', 'success'); }

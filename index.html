@@ -130,41 +130,43 @@
     });
 
     function renderStudentsTable(filtered = null) {
-      const tbody = document.getElementById('students-table');
-      tbody.innerHTML = '';
-      const data = filtered || students;
+  const tbody = document.getElementById('students-table');
+  tbody.innerHTML = '';
+  const data = filtered || students;
 
-      data.forEach((student, index) => {
-        let photoSrc = student.photoURL || student.photo || null;
+  data.forEach((student, index) => {
+    let photoSrc = student.photoURL || student.photo || null;
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="px-3 py-3 text-center">${index + 1}</td>
-          <td class="px-3 py-3">
-            ${photoSrc ? 
-              `<img src="${photoSrc}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
-              `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`
-            }
-          </td>
-          <td class="px-4 py-3 font-semibold">${student.name}</td>
-          <td class="px-3 py-3 text-center">${student.gender}</td>
-          <td class="px-3 py-3 text-center">${student.age}</td>
-          <td class="px-3 py-3 text-center">
-            <div class="text-green-600 font-mono">${student.in_time || '-'}</div>
-          </td>
-          <td class="px-3 py-3 text-center">
-            <div class="text-red-600 font-mono">${student.out_time || '-'}</div>
-          </td>
-          <td class="px-3 py-3 text-center no-print">
-            <div class="flex gap-x-1 justify-center">
-              <button onclick="showSignatureModal('${student.id}', 'in')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
-              <button onclick="showSignatureModal('${student.id}', 'out')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="px-3 py-3 text-center">${index + 1}</td>
+      <td class="px-3 py-3">
+        ${photoSrc ? 
+          `<img src="${photoSrc}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
+          `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`
+        }
+      </td>
+      <td class="px-4 py-3 font-semibold">${student.name}</td>
+      <td class="px-3 py-3 text-center">${student.gender}</td>
+      <td class="px-3 py-3 text-center">${student.age}</td>
+      <td class="px-3 py-3 text-center">
+        <div class="text-green-600 font-mono">${student.in_time || '-'}</div>
+        ${student.in_signature ? `<img src="${student.in_signature}" class="h-6 mx-auto mt-1">` : ''}
+      </td>
+      <td class="px-3 py-3 text-center">
+        <div class="text-red-600 font-mono">${student.out_time || '-'}</div>
+        ${student.out_signature ? `<img src="${student.out_signature}" class="h-6 mx-auto mt-1">` : ''}
+      </td>
+      <td class="px-3 py-3 text-center no-print">
+        <div class="flex gap-x-1 justify-center">
+          <button onclick="showSignatureModal('${student.id}', 'in')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
+          <button onclick="showSignatureModal('${student.id}', 'out')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
 
     function filterStudents() {
       const term = document.getElementById('search-input').value.toLowerCase();

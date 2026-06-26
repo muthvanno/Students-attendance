@@ -159,12 +159,15 @@
       const data = filtered || students;
 
       data.forEach((student, index) => {
+        // Support both photoURL and photo (Base64)
+        let photoSrc = student.photoURL || student.photo || null;
+
         const row = document.createElement('tr');
         row.innerHTML = `
           <td class="px-3 py-3 text-center">${index + 1}</td>
           <td class="px-3 py-3">
-            ${student.photo ? 
-              `<img src="${student.photo}" class="w-10 h-10 rounded-full object-cover mx-auto">` : 
+            ${photoSrc ? 
+              `<img src="${photoSrc}" class="w-10 h-10 rounded-full object-cover mx-auto">` : 
               `<div class="w-10 h-10 bg-gray-200 rounded-full mx-auto flex items-center justify-center"><i class="fa-solid fa-user text-gray-400"></i></div>`
             }
           </td>
@@ -201,7 +204,6 @@
       overlay.classList.toggle('hidden');
     }
 
-    // ==================== ADD STUDENT WITH BASE64 PHOTO ====================
     function showAddStudentModal() {
       document.getElementById('add-student-modal').classList.remove('hidden');
     }
@@ -227,22 +229,18 @@
       if (photoFile) {
         const reader = new FileReader();
         reader.onload = function(e) {
-          const photoBase64 = e.target.result;
-
           studentsCollection.add({
             name: name,
             gender: gender,
             age: parseInt(age) || 0,
-            photo: photoBase64,
+            photo: e.target.result, // Base64
             created_at: new Date()
           });
-
           closeAddStudentModal();
           Swal.fire('ជោគជ័យ', 'សិស្សត្រូវបានបន្ថែម', 'success');
         };
         reader.readAsDataURL(photoFile);
       } else {
-        // No photo
         studentsCollection.add({
           name: name,
           gender: gender,
@@ -250,14 +248,13 @@
           photo: null,
           created_at: new Date()
         });
-
         closeAddStudentModal();
         Swal.fire('ជោគជ័យ', 'សិស្សត្រូវបានបន្ថែម', 'success');
       }
     }
 
     function init() {
-      // Initialization if needed
+      // ready
     }
 
     window.onload = init;

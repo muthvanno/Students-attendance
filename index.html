@@ -90,46 +90,22 @@
     </div>
   </div>
 
-  <!-- ADD STUDENT MODAL -->
-  <div id="add-student-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[70]">
+  <!-- SIGNATURE MODAL -->
+  <div id="signature-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[60]">
     <div class="bg-white rounded-3xl p-6 w-full max-w-md mx-4">
-      <h3 class="text-xl font-bold mb-4">បន្ថែមសិស្សថ្មី</h3>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">ឈ្មោះសិស្ស</label>
-          <input type="text" id="new-name" class="w-full border rounded-xl px-4 py-2.5">
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">ភេទ</label>
-            <select id="new-gender" class="w-full border rounded-xl px-4 py-2.5">
-              <option value="Male">ប្រុស</option>
-              <option value="Female">ស្រី</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">អាយុ</label>
-            <input type="number" id="new-age" class="w-full border rounded-xl px-4 py-2.5">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium mb-1">រូបថតសិស្ស (ជ្រើសរើស)</label>
-          <input type="file" id="new-photo" accept="image/*" class="w-full border rounded-xl px-4 py-2">
-        </div>
+      <h3 class="text-xl font-bold mb-4 text-center" id="signature-title">ហត្ថលេខា</h3>
+      <div class="border-2 border-blue-300 rounded-2xl p-2 bg-white mb-4">
+        <canvas id="signature-canvas" width="400" height="180" class="w-full touch-none border border-gray-300 rounded-xl cursor-crosshair"></canvas>
       </div>
-
-      <div class="flex gap-x-3 mt-6">
-        <button onclick="closeAddStudentModal()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium">បោះបង់</button>
-        <button onclick="addNewStudent()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium">រក្សាទុក</button>
+      <div class="flex gap-x-3">
+        <button onclick="clearSignature()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium">Clear</button>
+        <button onclick="saveSignature()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium">រក្សាទុក</button>
+        <button onclick="closeSignatureModal()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium">បោះបង់</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ==================== FIREBASE CONFIG ====================
     const firebaseConfig = {
       apiKey: "AIzaSyBwjSme2pm_YRgB4D2B6xQk1DoJJ06GRaM",
       authDomain: "phnom-srok-hs-system-2027.firebaseapp.com",
@@ -153,79 +129,42 @@
       renderStudentsTable();
     });
 
-    // function renderStudentsTable(filtered = null) {
-    //   const tbody = document.getElementById('students-table');
-    //   tbody.innerHTML = '';
-    //   const data = filtered || students;
-
-    //   data.forEach((student, index) => {
-    //     // Support both photoURL and photo (Base64)
-    //     let photoSrc = student.photoURL || student.photo || null;
-
-    //     const row = document.createElement('tr');
-    //     row.innerHTML = `
-    //       <td class="px-3 py-3 text-center">${index + 1}</td>
-    //       <td class="px-3 py-3">
-    //         ${photoSrc ? 
-    //           `<img src="${photoSrc}" class="w-10 h-10 rounded-full object-cover mx-auto">` : 
-    //           `<div class="w-10 h-10 bg-gray-200 rounded-full mx-auto flex items-center justify-center"><i class="fa-solid fa-user text-gray-400"></i></div>`
-    //         }
-    //       </td>
-    //       <td class="px-4 py-3 font-semibold">${student.name}</td>
-    //       <td class="px-3 py-3 text-center">${student.gender}</td>
-    //       <td class="px-3 py-3 text-center">${student.age}</td>
-    //       <td class="px-3 py-3 text-center">
-    //         <div class="text-green-600 font-mono">${student.in_time || '-'}</div>
-    //       </td>
-    //       <td class="px-3 py-3 text-center">
-    //         <div class="text-red-600 font-mono">${student.out_time || '-'}</div>
-    //       </td>
-    //       <td class="px-3 py-3 text-center no-print">
-    //         <div class="flex gap-x-1 justify-center">
-    //           <button onclick="showSignatureModal('${student.id}', 'in')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
-    //           <button onclick="showSignatureModal('${student.id}', 'out')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
-    //         </div>
-    //       </td>
-    //     `;
-    //     tbody.appendChild(row);
-    //   });
-    // }
     function renderStudentsTable(filtered = null) {
-  const tbody = document.getElementById('students-table');
-  tbody.innerHTML = '';
-  const data = filtered || students;
+      const tbody = document.getElementById('students-table');
+      tbody.innerHTML = '';
+      const data = filtered || students;
 
-  data.forEach((student, index) => {
-    let photoSrc = student.photoURL || student.photo || null;
+      data.forEach((student, index) => {
+        let photoSrc = student.photoURL || student.photo || null;
 
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="px-3 py-3 text-center">${index + 1}</td>
-      <td class="px-3 py-3">
-        ${photoSrc ? 
-          `<img src="${photoSrc}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
-          `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`
-        }
-      </td>
-      <td class="px-4 py-3 font-semibold">${student.name}</td>
-      <td class="px-3 py-3 text-center">${student.gender}</td>
-      <td class="px-3 py-3 text-center">${student.age}</td>
-      <td class="px-3 py-3 text-center">
-        <div class="text-green-600 font-mono">${student.in_time || '-'}</div>
-      </td>
-      <td class="px-3 py-3 text-center">
-        <div class="text-red-600 font-mono">${student.out_time || '-'}</div>
-      </td>
-      <td class="px-3 py-3 text-center no-print">
-        <div class="flex gap-x-1 justify-center">
-          <button onclick="showSignatureModal('${student.id}', 'in')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
-          <button onclick="showSignatureModal('${student.id}', 'out')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(row);
-  });
-}
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-3 py-3 text-center">${index + 1}</td>
+          <td class="px-3 py-3">
+            ${photoSrc ? 
+              `<img src="${photoSrc}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
+              `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`
+            }
+          </td>
+          <td class="px-4 py-3 font-semibold">${student.name}</td>
+          <td class="px-3 py-3 text-center">${student.gender}</td>
+          <td class="px-3 py-3 text-center">${student.age}</td>
+          <td class="px-3 py-3 text-center">
+            <div class="text-green-600 font-mono">${student.in_time || '-'}</div>
+          </td>
+          <td class="px-3 py-3 text-center">
+            <div class="text-red-600 font-mono">${student.out_time || '-'}</div>
+          </td>
+          <td class="px-3 py-3 text-center no-print">
+            <div class="flex gap-x-1 justify-center">
+              <button onclick="showSignatureModal('${student.id}', 'in')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
+              <button onclick="showSignatureModal('${student.id}', 'out')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
 
     function filterStudents() {
       const term = document.getElementById('search-input').value.toLowerCase();
@@ -240,53 +179,80 @@
       overlay.classList.toggle('hidden');
     }
 
-    function showAddStudentModal() {
-      document.getElementById('add-student-modal').classList.remove('hidden');
+    // ==================== SIGNATURE FUNCTIONS ====================
+    let currentSigningId = null;
+    let currentSignType = null;
+    let signatureCanvas, ctx, isDrawing = false;
+
+    function showSignatureModal(studentId, type) {
+      currentSigningId = studentId;
+      currentSignType = type;
+      document.getElementById('signature-modal').classList.remove('hidden');
+
+      const title = document.getElementById('signature-title');
+      title.innerText = type === 'in' ? 'ហត្ថលេខា ម៉ោងចូល' : 'ហត្ថលេខា ម៉ោងចេញ';
+
+      signatureCanvas = document.getElementById('signature-canvas');
+      ctx = signatureCanvas.getContext('2d');
+      ctx.strokeStyle = '#1e40af';
+      ctx.lineWidth = 3;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+
+      signatureCanvas.onmousedown = startDrawing;
+      signatureCanvas.onmousemove = draw;
+      signatureCanvas.onmouseup = stopDrawing;
+      signatureCanvas.onmouseout = stopDrawing;
+      signatureCanvas.ontouchstart = startDrawing;
+      signatureCanvas.ontouchmove = draw;
+      signatureCanvas.ontouchend = stopDrawing;
     }
 
-    function closeAddStudentModal() {
-      document.getElementById('add-student-modal').classList.add('hidden');
-      document.getElementById('new-name').value = '';
-      document.getElementById('new-age').value = '';
-      document.getElementById('new-photo').value = '';
+    function getMousePos(e) {
+      const rect = signatureCanvas.getBoundingClientRect();
+      return { x: (e.clientX || e.touches[0].clientX) - rect.left, y: (e.clientY || e.touches[0].clientY) - rect.top };
     }
 
-    function addNewStudent() {
-      const name = document.getElementById('new-name').value.trim();
-      const gender = document.getElementById('new-gender').value;
-      const age = document.getElementById('new-age').value;
-      const photoFile = document.getElementById('new-photo').files[0];
+    function startDrawing(e) { isDrawing = true; const pos = getMousePos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); }
+    function draw(e) { if (!isDrawing) return; const pos = getMousePos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
+    function stopDrawing() { isDrawing = false; }
+    function clearSignature() { if (ctx) ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height); }
 
-      if (!name) {
-        Swal.fire('Error', 'សូមបញ្ចូលឈ្មោះសិស្ស', 'error');
-        return;
-      }
+    async function saveSignature() {
+      if (!currentSigningId || !signatureCanvas || !currentSignType) return;
 
-      if (photoFile) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          studentsCollection.add({
-            name: name,
-            gender: gender,
-            age: parseInt(age) || 0,
-            photo: e.target.result, // Base64
-            created_at: new Date()
-          });
-          closeAddStudentModal();
-          Swal.fire('ជោគជ័យ', 'សិស្សត្រូវបានបន្ថែម', 'success');
-        };
-        reader.readAsDataURL(photoFile);
-      } else {
-        studentsCollection.add({
-          name: name,
-          gender: gender,
-          age: parseInt(age) || 0,
-          photo: null,
-          created_at: new Date()
+      const dataURL = signatureCanvas.toDataURL('image/png');
+      const student = students.find(s => s.id === currentSigningId);
+      
+      if (student) {
+        const now = new Date().toLocaleTimeString('en-US', { 
+          hour12: false, 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
         });
-        closeAddStudentModal();
-        Swal.fire('ជោគជ័យ', 'សិស្សត្រូវបានបន្ថែម', 'success');
+
+        const updateData = {};
+        if (currentSignType === 'in') {
+          updateData.in_time = now;
+          updateData.in_signature = dataURL;
+        } else {
+          updateData.out_time = now;
+          updateData.out_signature = dataURL;
+        }
+
+        await studentsCollection.doc(currentSigningId).update(updateData);
+        Swal.fire('ជោគជ័យ', 'ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក', 'success');
       }
+      closeSignatureModal();
+    }
+
+    function closeSignatureModal() {
+      document.getElementById('signature-modal').classList.add('hidden');
+      currentSigningId = null;
+      currentSignType = null;
+      isDrawing = false;
     }
 
     function init() {

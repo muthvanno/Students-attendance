@@ -29,11 +29,21 @@
         </div>
         <button onclick="toggleSidebar()" class="md:hidden text-2xl"><i class="fa-solid fa-times"></i></button>
       </div>
+
       <div class="p-4 flex-1">
         <nav class="space-y-1">
-          <a href="#" onclick="toggleSidebar()" class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium">
+          <!-- Student List -->
+          <a href="#" onclick="showSection('students'); toggleSidebar()" 
+             class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium">
             <i class="fa-solid fa-users w-5"></i>
             <span>Student List</span>
+          </a>
+
+          <!-- Teacher Attendance -->
+          <a href="#" onclick="showSection('teachers'); toggleSidebar()" 
+             class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium">
+            <i class="fa-solid fa-chalkboard-teacher w-5"></i>
+            <span>Teacher Attendance</span>
           </a>
         </nav>
       </div>
@@ -41,11 +51,13 @@
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- HEADER -->
       <div class="bg-white border-b px-4 py-4 flex justify-between items-center no-print">
         <div class="flex items-center gap-x-3">
           <button onclick="toggleSidebar()" class="md:hidden text-2xl"><i class="fa-solid fa-bars"></i></button>
           <div>
-            <h2 class="text-2xl font-bold">Student List</h2>
+            <h2 class="text-2xl font-bold" id="page-title">Student List</h2>
             <p class="text-sm text-gray-500" id="current-date"></p>
           </div>
         </div>
@@ -57,17 +69,18 @@
         </div>
       </div>
 
-      <div class="flex-1 overflow-auto p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-2xl font-bold">Student List • Grade 10 • 25 មីនា 2026</h3>
-          <button onclick="showAddStudentModal()" class="flex items-center gap-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl text-sm no-print">
-            <i class="fa-solid fa-plus"></i> <span>Add Student</span>
-          </button>
-        </div>
+      <!-- STUDENT SECTION -->
+      <div id="student-section">
+        <div class="flex-1 overflow-auto p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-bold">Student List • Grade 10 • 25 មីនា 2026</h3>
+            <button onclick="showAddStudentModal()" class="flex items-center gap-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl text-sm no-print">
+              <i class="fa-solid fa-plus"></i> <span>Add Student</span>
+            </button>
+          </div>
 
-        <input type="text" id="search-input" placeholder="ស្វែងរកឈ្មោះសិស្ស..." onkeyup="filterStudents()" class="w-full md:w-96 mb-4 px-4 py-3 border rounded-2xl">
+          <input type="text" id="search-input" placeholder="ស្វែងរកឈ្មោះសិស្ស..." onkeyup="filterStudents()" class="w-full md:w-96 mb-4 px-4 py-3 border rounded-2xl">
 
-        <div id="print-area">
           <div class="bg-white rounded-3xl shadow border overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
@@ -87,6 +100,35 @@
           </div>
         </div>
       </div>
+
+      <!-- TEACHER SECTION -->
+      <div id="teacher-section" class="hidden">
+        <div class="flex-1 overflow-auto p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-bold">Teacher Attendance</h3>
+            <button onclick="showAddTeacherModal()" class="flex items-center gap-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl text-sm no-print">
+              <i class="fa-solid fa-plus"></i> <span>Add Teacher</span>
+            </button>
+          </div>
+
+          <div class="bg-white rounded-3xl shadow border overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-center">
+                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ល.រ</th>
+                  <th class="px-3 py-3 border-b bg-blue-700 text-white">រូបថត</th>
+                  <th class="px-4 py-3 border-b bg-blue-700 text-white text-left">ឈ្មោះគ្រូ</th>
+                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចូល</th>
+                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចេញ</th>
+                  <th class="px-3 py-3 border-b bg-blue-700 text-white no-print">Action</th>
+                </tr>
+              </thead>
+              <tbody id="teachers-table" class="divide-y"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -106,6 +148,7 @@
   </div>
 
   <script>
+    // ==================== FIREBASE ====================
     const firebaseConfig = {
       apiKey: "AIzaSyBwjSme2pm_YRgB4D2B6xQk1DoJJ06GRaM",
       authDomain: "phnom-srok-hs-system-2027.firebaseapp.com",
@@ -118,17 +161,49 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const studentsCollection = db.collection("students");
+    const teachersCollection = db.collection("teachers");
 
     let students = [];
+    let teachers = [];
 
+    // ==================== REAL-TIME LISTENERS ====================
     studentsCollection.onSnapshot((snapshot) => {
       students = [];
-      snapshot.forEach(doc => {
-        students.push({ id: doc.id, ...doc.data() });
-      });
+      snapshot.forEach(doc => students.push({ id: doc.id, ...doc.data() }));
       renderStudentsTable();
     });
 
+    teachersCollection.onSnapshot((snapshot) => {
+      teachers = [];
+      snapshot.forEach(doc => teachers.push({ id: doc.id, ...doc.data() }));
+      renderTeachersTable();
+    });
+
+    // ==================== SECTION SWITCH ====================
+    function showSection(section) {
+      const studentSec = document.getElementById('student-section');
+      const teacherSec = document.getElementById('teacher-section');
+      const pageTitle = document.getElementById('page-title');
+
+      if (section === 'students') {
+        studentSec.classList.remove('hidden');
+        teacherSec.classList.add('hidden');
+        pageTitle.innerText = 'Student List';
+      } else {
+        studentSec.classList.add('hidden');
+        teacherSec.classList.remove('hidden');
+        pageTitle.innerText = 'Teacher Attendance';
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('-translate-x-full');
+      if (overlay) overlay.classList.toggle('hidden');
+    }
+
+    // ==================== STUDENT FUNCTIONS ====================
     function renderStudentsTable(filtered = null) {
       const tbody = document.getElementById('students-table');
       tbody.innerHTML = '';
@@ -159,8 +234,8 @@
           </td>
           <td class="px-3 py-3 text-center no-print">
             <div class="flex gap-x-1 justify-center">
-              <button onclick="showSignatureModal('${student.id}', 'in')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
-              <button onclick="showSignatureModal('${student.id}', 'out')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
+              <button onclick="showSignatureModal('${student.id}', 'in', 'student')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
+              <button onclick="showSignatureModal('${student.id}', 'out', 'student')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
             </div>
           </td>
         `;
@@ -174,21 +249,80 @@
       renderStudentsTable(filtered);
     }
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      sidebar.classList.toggle('-translate-x-full');
-      overlay.classList.toggle('hidden');
+    // ==================== TEACHER FUNCTIONS ====================
+    function renderTeachersTable() {
+      const tbody = document.getElementById('teachers-table');
+      tbody.innerHTML = '';
+      
+      teachers.forEach((teacher, index) => {
+        let photoSrc = teacher.photo || null;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-3 py-3 text-center">${index + 1}</td>
+          <td class="px-3 py-3">
+            ${photoSrc ? 
+              `<img src="${photoSrc}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
+              `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`
+            }
+          </td>
+          <td class="px-4 py-3 font-semibold">${teacher.name}</td>
+          <td class="px-3 py-3 text-center">
+            <div class="text-green-600 font-mono">${teacher.in_time || '-'}</div>
+            ${teacher.in_signature ? `<img src="${teacher.in_signature}" class="h-6 mx-auto mt-1">` : ''}
+          </td>
+          <td class="px-3 py-3 text-center">
+            <div class="text-red-600 font-mono">${teacher.out_time || '-'}</div>
+            ${teacher.out_signature ? `<img src="${teacher.out_signature}" class="h-6 mx-auto mt-1">` : ''}
+          </td>
+          <td class="px-3 py-3 text-center no-print">
+            <div class="flex gap-x-1 justify-center">
+              <button onclick="showSignatureModal('${teacher.id}', 'in', 'teacher')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
+              <button onclick="showSignatureModal('${teacher.id}', 'out', 'teacher')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function showAddTeacherModal() {
+      Swal.fire({
+        title: 'បន្ថែមគ្រូថ្មី',
+        html: `
+          <input id="teacher-name" class="swal2-input" placeholder="ឈ្មោះគ្រូ">
+          <input type="file" id="teacher-photo" class="swal2-file mt-3">
+        `,
+        confirmButtonText: 'រក្សាទុក',
+        preConfirm: () => {
+          const name = document.getElementById('teacher-name').value;
+          if (!name) {
+            Swal.showValidationMessage('សូមបញ្ចូលឈ្មោះគ្រូ');
+          }
+          return { name };
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          teachersCollection.add({
+            name: result.value.name,
+            photo: null,
+            created_at: new Date()
+          });
+          Swal.fire('ជោគជ័យ', 'គ្រូត្រូវបានបន្ថែម', 'success');
+        }
+      });
     }
 
     // ==================== SIGNATURE SYSTEM ====================
     let currentSigningId = null;
     let currentSignType = null;
+    let currentType = null; // 'student' or 'teacher'
     let signatureCanvas, ctx, isDrawing = false;
 
-    function showSignatureModal(studentId, type) {
-      currentSigningId = studentId;
+    function showSignatureModal(id, type, collectionType) {
+      currentSigningId = id;
       currentSignType = type;
+      currentType = collectionType;
       document.getElementById('signature-modal').classList.remove('hidden');
 
       const title = document.getElementById('signature-title');
@@ -225,28 +359,20 @@
       if (!currentSigningId || !signatureCanvas || !currentSignType) return;
 
       const dataURL = signatureCanvas.toDataURL('image/png');
-      const student = students.find(s => s.id === currentSigningId);
-      
-      if (student) {
-        const now = new Date().toLocaleTimeString('en-US', { 
-          hour12: false, 
-          hour: '2-digit', 
-          minute: '2-digit', 
-          second: '2-digit' 
-        });
+      const collection = currentType === 'student' ? studentsCollection : teachersCollection;
+      const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-        const updateData = {};
-        if (currentSignType === 'in') {
-          updateData.in_time = now;
-          updateData.in_signature = dataURL;
-        } else {
-          updateData.out_time = now;
-          updateData.out_signature = dataURL;
-        }
-
-        await studentsCollection.doc(currentSigningId).update(updateData);
-        Swal.fire('ជោគជ័យ', 'ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក', 'success');
+      const updateData = {};
+      if (currentSignType === 'in') {
+        updateData.in_time = now;
+        updateData.in_signature = dataURL;
+      } else {
+        updateData.out_time = now;
+        updateData.out_signature = dataURL;
       }
+
+      await collection.doc(currentSigningId).update(updateData);
+      Swal.fire('ជោគជ័យ', 'ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក', 'success');
       closeSignatureModal();
     }
 
@@ -254,108 +380,16 @@
       document.getElementById('signature-modal').classList.add('hidden');
       currentSigningId = null;
       currentSignType = null;
+      currentType = null;
       isDrawing = false;
     }
 
-    // ==================== PRINT REPORT ====================
-    function printReport() {
-      const today = new Date();
-      const dateStr = today.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-
-      let html = `
-        <html>
-        <head>
-          <title>Attendance Report</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1, h2 { text-align: center; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 12px; }
-            th { background: #f0f0f0; }
-            .signature { max-height: 40px; max-width: 80px; }
-            .photo { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
-          </style>
-        </head>
-        <body>
-          <h1>វិទ្យាល័យភ្នំស្រុក</h1>
-          <h2>បញ្ជីឈ្មោះសិស្ស និងហត្ថលេខា</h2>
-          <p style="text-align:center;">ថ្នាក់ទី 10 • ${dateStr}</p>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>ល.រ</th>
-                <th>រូបថត</th>
-                <th>នាមនិងគោត្តនាម</th>
-                <th>ម៉ោងចូល</th>
-                <th>ហត្ថលេខា</th>
-                <th>ម៉ោងចេញ</th>
-                <th>ហត្ថលេខា</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-
-      students.forEach((s, i) => {
-        const photo = (s.photoURL || s.photo) 
-          ? `<img src="${s.photoURL || s.photo}" class="photo">` 
-          : '-';
-
-        const inSig = s.in_signature 
-          ? `<img src="${s.in_signature}" class="signature">` 
-          : '-';
-
-        const outSig = s.out_signature 
-          ? `<img src="${s.out_signature}" class="signature">` 
-          : '-';
-
-        html += `
-          <tr>
-            <td>${i + 1}</td>
-            <td>${photo}</td>
-            <td style="text-align:left; padding-left:10px;">${s.name}</td>
-            <td>${s.in_time || '-'}</td>
-            <td>${inSig}</td>
-            <td>${s.out_time || '-'}</td>
-            <td>${outSig}</td>
-          </tr>
-        `;
-      });
-
-      html += `
-            </tbody>
-          </table>
-
-          <div style="margin-top:60px; display:flex; justify-content:space-between; padding:0 40px;">
-            <div style="text-align:center;">
-              <p>គ្រូបន្ទុកថ្នាក់</p><br><br>
-              ____________________
-            </div>
-            <div style="text-align:center;">
-              <p>នាយកសាលា</p><br><br>
-              ____________________
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(html);
-      printWindow.document.close();
-
-      setTimeout(() => {
-        printWindow.print();
-      }, 500);
-    }
-
     function init() {
-      // ready
+      document.getElementById('current-date').innerHTML = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      
+      setInterval(() => {
+        document.getElementById('live-clock').innerHTML = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }, 1000);
     }
 
     window.onload = init;

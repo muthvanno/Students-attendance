@@ -184,11 +184,57 @@
       container.innerHTML = html;
     }
 
-    function renderTeachersTable() {
-      // Similar structure for teachers (you can expand later)
-      const container = document.getElementById('main-content');
-      container.innerHTML = `<div class="text-center py-10 text-gray-500">Teacher Attendance with Morning/Afternoon coming soon...</div>`;
-    }
+   function renderTeachersTable() {
+  const container = document.getElementById('main-content');
+  let html = `<div class="bg-white rounded-3xl shadow border overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-center"><th class="px-3 py-3 bg-blue-700 text-white">ល.រ</th><th class="px-3 py-3 bg-blue-700 text-white">រូបថត</th><th class="px-4 py-3 bg-blue-700 text-white text-left">គោត្តនាម / ឈ្មោះ</th><th class="px-3 py-3 bg-blue-700 text-white">ម៉ោងចូល<br><small class="text-xs">(ព្រឹក)</small></th><th class="px-3 py-3 bg-blue-700 text-white">ម៉ោងចេញ<br><small class="text-xs">(ព្រឹក)</small></th><th class="px-3 py-3 bg-blue-700 text-white">ម៉ោងចូល<br><small class="text-xs">(រសៀល)</small></th><th class="px-3 py-3 bg-blue-700 text-white">ម៉ោងចេញ<br><small class="text-xs">(រសៀល)</small></th><th class="px-3 py-3 bg-blue-700 text-white no-print">Action</th></tr></thead><tbody class="divide-y">`;
+
+  teachers.forEach((t, i) => {
+    const directPhoto = getDirectImageUrl(t.photo);
+    const photo = directPhoto ? `<img src="${directPhoto}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
+                  `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`;
+    
+    const todayData = t.attendance?.[currentDate] || {};
+    const morning = todayData.morning || {};
+    const afternoon = todayData.afternoon || {};
+
+    html += `<tr>
+      <td class="px-3 py-3 text-center">${i+1}</td>
+      <td class="px-3 py-3">${photo}</td>
+      <td class="px-4 py-3 font-semibold">${t.name}</td>
+      
+      <!-- Morning -->
+      <td class="px-2 py-2 text-center">
+        <div class="text-green-600 font-mono text-xs">${morning.in_time || '-'}</div>
+        ${morning.in_signature ? `<img src="${morning.in_signature}" class="h-5 mx-auto">` : ''}
+      </td>
+      <td class="px-2 py-2 text-center">
+        <div class="text-red-600 font-mono text-xs">${morning.out_time || '-'}</div>
+        ${morning.out_signature ? `<img src="${morning.out_signature}" class="h-5 mx-auto">` : ''}
+      </td>
+      
+      <!-- Afternoon -->
+      <td class="px-2 py-2 text-center">
+        <div class="text-green-600 font-mono text-xs">${afternoon.in_time || '-'}</div>
+        ${afternoon.in_signature ? `<img src="${afternoon.in_signature}" class="h-5 mx-auto">` : ''}
+      </td>
+      <td class="px-2 py-2 text-center">
+        <div class="text-red-600 font-mono text-xs">${afternoon.out_time || '-'}</div>
+        ${afternoon.out_signature ? `<img src="${afternoon.out_signature}" class="h-5 mx-auto">` : ''}
+      </td>
+      
+      <td class="px-2 py-2 text-center no-print">
+        <div class="flex flex-col gap-y-1">
+          <button onclick="showSignatureModal('${t.id}', 'morning-in', 'teachers')" class="px-2 py-0.5 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded ${morning.in_signature ? 'opacity-50 cursor-not-allowed' : ''}" ${morning.in_signature ? 'disabled' : ''}>ព្រឹក ចូល</button>
+          <button onclick="showSignatureModal('${t.id}', 'morning-out', 'teachers')" class="px-2 py-0.5 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded ${morning.out_signature ? 'opacity-50 cursor-not-allowed' : ''}" ${morning.out_signature ? 'disabled' : ''}>ព្រឹក ចេញ</button>
+          <button onclick="showSignatureModal('${t.id}', 'afternoon-in', 'teachers')" class="px-2 py-0.5 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded ${afternoon.in_signature ? 'opacity-50 cursor-not-allowed' : ''}" ${afternoon.in_signature ? 'disabled' : ''}>រសៀល ចូល</button>
+          <button onclick="showSignatureModal('${t.id}', 'afternoon-out', 'teachers')" class="px-2 py-0.5 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded ${afternoon.out_signature ? 'opacity-50 cursor-not-allowed' : ''}" ${afternoon.out_signature ? 'disabled' : ''}>រសៀល ចេញ</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+}
 
     // ==================== SIGNATURE SYSTEM ====================
     let currentItemId = null;
@@ -262,8 +308,122 @@
     }
 
     function printCurrentReport() {
-      alert("Print report for Morning + Afternoon will be added soon.");
-    }
+  const isStudent = currentView === 'students';
+  const data = isStudent ? students : teachers;
+  const titleText = isStudent ? 'Student Attendance' : 'Teacher Attendance';
+
+  let html = `
+    <html>
+    <head>
+      <title>${titleText}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; font-size: 12px; }
+        h1, h2 { text-align: center; margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #000; padding: 6px; text-align: center; }
+        th { background: #f0f0f0; }
+        .photo { width: 35px; height: 35px; object-fit: cover; border-radius: 6px; }
+        .signature { max-height: 30px; max-width: 70px; }
+        .session-header { background: #e0f0ff; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <h1>វិទ្យាល័យភ្នំស្រុក</h1>
+      <h2>${titleText}</h2>
+      <p style="text-align:center; margin-bottom: 15px;">${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">ល.រ</th>
+            <th rowspan="2">រូបថត</th>
+            <th rowspan="2">ឈ្មោះ</th>
+            <th colspan="2" class="session-header">ព្រឹក (Morning)</th>
+            <th colspan="2" class="session-header">រសៀល (Afternoon)</th>
+          </tr>
+          <tr>
+            <th>ម៉ោងចូល</th>
+            <th>ម៉ោងចេញ</th>
+            <th>ម៉ោងចូល</th>
+            <th>ម៉ោងចេញ</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  data.forEach((item, i) => {
+    const directPhoto = getDirectImageUrl(item.photo);
+    const photo = directPhoto ? `<img src="${directPhoto}" class="photo">` : '-';
+
+    const todayData = item.attendance?.[currentDate] || {};
+    const morning = todayData.morning || {};
+    const afternoon = todayData.afternoon || {};
+
+    const morningIn = morning.in_time || '-';
+    const morningOut = morning.out_time || '-';
+    const morningInSig = morning.in_signature ? `<img src="${morning.in_signature}" class="signature">` : '-';
+    const morningOutSig = morning.out_signature ? `<img src="${morning.out_signature}" class="signature">` : '-';
+
+    const afternoonIn = afternoon.in_time || '-';
+    const afternoonOut = afternoon.out_time || '-';
+    const afternoonInSig = afternoon.in_signature ? `<img src="${afternoon.in_signature}" class="signature">` : '-';
+    const afternoonOutSig = afternoon.out_signature ? `<img src="${afternoon.out_signature}" class="signature">` : '-';
+
+    html += `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${photo}</td>
+        <td style="text-align:left; padding-left:8px;">${item.name}</td>
+        
+        <!-- Morning -->
+        <td>
+          <div>${morningIn}</div>
+          <div>${morningInSig}</div>
+        </td>
+        <td>
+          <div>${morningOut}</div>
+          <div>${morningOutSig}</div>
+        </td>
+        
+        <!-- Afternoon -->
+        <td>
+          <div>${afternoonIn}</div>
+          <div>${afternoonInSig}</div>
+        </td>
+        <td>
+          <div>${afternoonOut}</div>
+          <div>${afternoonOutSig}</div>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+
+      <div style="margin-top: 50px; display: flex; justify-content: space-between; padding: 0 30px;">
+        <div style="text-align: center;">
+          <p>គ្រូបន្ទុកថ្នាក់</p><br><br>
+          ____________________
+        </div>
+        <div style="text-align: center;">
+          <p>នាយកសាលា</p><br><br>
+          ____________________
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(html);
+  printWindow.document.close();
+
+  setTimeout(() => {
+    printWindow.print();
+  }, 500);
+}
 
     function showAddModal() { /* Add modal code */ }
     function closeAddModal() { /* ... */ }

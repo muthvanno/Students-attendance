@@ -16,31 +16,24 @@
   <div class="flex h-screen overflow-hidden">
     
     <!-- SIDEBAR -->
-    <div id="sidebar" class="w-64 bg-blue-800 text-white flex flex-col fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
-      <div class="p-6 border-b border-blue-700 flex justify-between items-center">
-        <div class="flex items-center gap-x-3">
-          <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-            <i class="fa-solid fa-graduation-cap text-blue-800 text-2xl"></i>
-          </div>
-          <div>
-            <h1 class="font-bold text-xl">Phnom Srok HS</h1>
-            <p class="text-xs text-blue-200">Attendance 2027</p>
-          </div>
+    <div class="w-64 bg-blue-800 text-white flex flex-col">
+      <div class="p-6 border-b border-blue-700 flex items-center gap-x-3">
+        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+          <i class="fa-solid fa-graduation-cap text-blue-800 text-2xl"></i>
         </div>
-        <button onclick="toggleSidebar()" class="md:hidden text-2xl"><i class="fa-solid fa-times"></i></button>
+        <div>
+          <h1 class="font-bold text-xl">Phnom Srok HS</h1>
+          <p class="text-xs text-blue-200">Attendance 2027</p>
+        </div>
       </div>
-
       <div class="p-4 flex-1">
         <nav class="space-y-1">
-          <!-- Student List -->
-          <a href="#" onclick="showSection('students'); toggleSidebar()" 
+          <a href="#" onclick="switchView('students')" id="nav-students"
              class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium">
             <i class="fa-solid fa-users w-5"></i>
             <span>Student List</span>
           </a>
-
-          <!-- Teacher Attendance -->
-          <a href="#" onclick="showSection('teachers'); toggleSidebar()" 
+          <a href="#" onclick="switchView('teachers')" id="nav-teachers"
              class="flex items-center gap-x-3 px-4 py-3 hover:bg-blue-700 rounded-xl font-medium">
             <i class="fa-solid fa-chalkboard-teacher w-5"></i>
             <span>Teacher Attendance</span>
@@ -51,84 +44,25 @@
 
     <!-- MAIN CONTENT -->
     <div class="flex-1 flex flex-col overflow-hidden">
-
-      <!-- HEADER -->
-      <div class="bg-white border-b px-4 py-4 flex justify-between items-center no-print">
-        <div class="flex items-center gap-x-3">
-          <button onclick="toggleSidebar()" class="md:hidden text-2xl"><i class="fa-solid fa-bars"></i></button>
-          <div>
-            <h2 class="text-2xl font-bold" id="page-title">Student List</h2>
-            <p class="text-sm text-gray-500" id="current-date"></p>
-          </div>
+      <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
+        <div>
+          <h2 class="text-2xl font-bold" id="page-title">Student List</h2>
+          <p class="text-sm text-gray-500" id="current-date"></p>
         </div>
         <div class="flex items-center gap-x-3">
           <div id="live-clock" class="bg-pink-100 text-pink-700 px-4 py-1.5 rounded-2xl font-mono text-sm font-semibold">00:00:00</div>
-          <button onclick="printReport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center gap-x-2 text-sm">
+          <button onclick="printCurrentReport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl flex items-center gap-x-2 text-sm">
             <i class="fa-solid fa-print"></i> <span>Print Report</span>
+          </button>
+          <button onclick="showAddModal()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl flex items-center gap-x-2 text-sm">
+            <i class="fa-solid fa-plus"></i> <span id="add-button-text">Add Student</span>
           </button>
         </div>
       </div>
 
-      <!-- STUDENT SECTION -->
-      <div id="student-section">
-        <div class="flex-1 overflow-auto p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-2xl font-bold">Student List • Grade 10 • 25 មីនា 2026</h3>
-            <button onclick="showAddStudentModal()" class="flex items-center gap-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl text-sm no-print">
-              <i class="fa-solid fa-plus"></i> <span>Add Student</span>
-            </button>
-          </div>
-
-          <input type="text" id="search-input" placeholder="ស្វែងរកឈ្មោះសិស្ស..." onkeyup="filterStudents()" class="w-full md:w-96 mb-4 px-4 py-3 border rounded-2xl">
-
-          <div class="bg-white rounded-3xl shadow border overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-center">
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ល.រ</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">រូបថត</th>
-                  <th class="px-4 py-3 border-b bg-blue-700 text-white text-left">នាមនិងគោត្តនាម</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ភេទ</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">អាយុ</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចូល</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចេញ</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white no-print">Action</th>
-                </tr>
-              </thead>
-              <tbody id="students-table" class="divide-y"></tbody>
-            </table>
-          </div>
-        </div>
+      <div class="flex-1 overflow-auto p-6" id="main-content">
+        <!-- Dynamic content will be loaded here -->
       </div>
-
-      <!-- TEACHER SECTION -->
-      <div id="teacher-section" class="hidden">
-        <div class="flex-1 overflow-auto p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-2xl font-bold">Teacher Attendance</h3>
-            <button onclick="showAddTeacherModal()" class="flex items-center gap-x-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-2xl text-sm no-print">
-              <i class="fa-solid fa-plus"></i> <span>Add Teacher</span>
-            </button>
-          </div>
-
-          <div class="bg-white rounded-3xl shadow border overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-center">
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ល.រ</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">រូបថត</th>
-                  <th class="px-4 py-3 border-b bg-blue-700 text-white text-left">ឈ្មោះគ្រូ</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចូល</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចេញ</th>
-                  <th class="px-3 py-3 border-b bg-blue-700 text-white no-print">Action</th>
-                </tr>
-              </thead>
-              <tbody id="teachers-table" class="divide-y"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 
@@ -147,8 +81,28 @@
     </div>
   </div>
 
+  <!-- ADD MODAL -->
+  <div id="add-modal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-[70]">
+    <div class="bg-white rounded-3xl p-6 w-full max-w-md mx-4">
+      <h3 class="text-xl font-bold mb-4" id="add-modal-title">បន្ថែមសិស្សថ្មី</h3>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">ឈ្មោះ</label>
+          <input type="text" id="new-name" class="w-full border rounded-xl px-4 py-2.5">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">រូបថត</label>
+          <input type="file" id="new-photo" accept="image/*" class="w-full border rounded-xl px-4 py-2">
+        </div>
+      </div>
+      <div class="flex gap-x-3 mt-6">
+        <button onclick="closeAddModal()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium">បោះបង់</button>
+        <button onclick="addNewItem()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-medium">រក្សាទុក</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ==================== FIREBASE ====================
     const firebaseConfig = {
       apiKey: "AIzaSyBwjSme2pm_YRgB4D2B6xQk1DoJJ06GRaM",
       authDomain: "phnom-srok-hs-system-2027.firebaseapp.com",
@@ -160,171 +114,181 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    const studentsCollection = db.collection("students");
-    const teachersCollection = db.collection("teachers");
 
+    let currentView = 'students';
     let students = [];
     let teachers = [];
+    let currentItemId = null;
+    let currentSignType = null;
+    let signatureCanvas, ctx, isDrawing = false;
 
-    // ==================== REAL-TIME LISTENERS ====================
-    studentsCollection.onSnapshot((snapshot) => {
+    // Real-time listeners
+    db.collection("students").onSnapshot(snapshot => {
       students = [];
       snapshot.forEach(doc => students.push({ id: doc.id, ...doc.data() }));
-      renderStudentsTable();
+      if (currentView === 'students') renderStudentsTable();
     });
 
-    teachersCollection.onSnapshot((snapshot) => {
+    db.collection("teachers").onSnapshot(snapshot => {
       teachers = [];
       snapshot.forEach(doc => teachers.push({ id: doc.id, ...doc.data() }));
-      renderTeachersTable();
+      if (currentView === 'teachers') renderTeachersTable();
     });
 
-    // ==================== SECTION SWITCH ====================
-    function showSection(section) {
-      const studentSec = document.getElementById('student-section');
-      const teacherSec = document.getElementById('teacher-section');
-      const pageTitle = document.getElementById('page-title');
+    function switchView(view) {
+      currentView = view;
+      const title = document.getElementById('page-title');
+      const addBtnText = document.getElementById('add-button-text');
 
-      if (section === 'students') {
-        studentSec.classList.remove('hidden');
-        teacherSec.classList.add('hidden');
-        pageTitle.innerText = 'Student List';
+      if (view === 'students') {
+        title.innerText = 'Student List';
+        addBtnText.innerText = 'Add Student';
+        renderStudentsTable();
       } else {
-        studentSec.classList.add('hidden');
-        teacherSec.classList.remove('hidden');
-        pageTitle.innerText = 'Teacher Attendance';
+        title.innerText = 'Teacher Attendance';
+        addBtnText.innerText = 'Add Teacher';
+        renderTeachersTable();
       }
     }
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const overlay = document.getElementById('sidebar-overlay');
-      sidebar.classList.toggle('-translate-x-full');
-      if (overlay) overlay.classList.toggle('hidden');
-    }
+    function renderStudentsTable() {
+      const container = document.getElementById('main-content');
+      let html = `
+        <div class="bg-white rounded-3xl shadow border overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-center">
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">ល.រ</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">រូបថត</th>
+                <th class="px-4 py-3 border-b bg-blue-700 text-white text-left">នាមនិងគោត្តនាម</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចូល</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចេញ</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white no-print">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+      `;
 
-    // ==================== STUDENT FUNCTIONS ====================
-    function renderStudentsTable(filtered = null) {
-      const tbody = document.getElementById('students-table');
-      tbody.innerHTML = '';
-      const data = filtered || students;
-
-      data.forEach((student, index) => {
-        let photoSrc = student.photoURL || student.photo || null;
-
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="px-3 py-3 text-center">${index + 1}</td>
-          <td class="px-3 py-3">
-            ${photoSrc ? 
-              `<img src="${photoSrc}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
-              `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`
-            }
-          </td>
-          <td class="px-4 py-3 font-semibold">${student.name}</td>
-          <td class="px-3 py-3 text-center">${student.gender}</td>
-          <td class="px-3 py-3 text-center">${student.age}</td>
-          <td class="px-3 py-3 text-center">
-            <div class="text-green-600 font-mono">${student.in_time || '-'}</div>
-            ${student.in_signature ? `<img src="${student.in_signature}" class="h-6 mx-auto mt-1">` : ''}
-          </td>
-          <td class="px-3 py-3 text-center">
-            <div class="text-red-600 font-mono">${student.out_time || '-'}</div>
-            ${student.out_signature ? `<img src="${student.out_signature}" class="h-6 mx-auto mt-1">` : ''}
-          </td>
-          <td class="px-3 py-3 text-center no-print">
-            <div class="flex gap-x-1 justify-center">
-              <button onclick="showSignatureModal('${student.id}', 'in', 'student')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
-              <button onclick="showSignatureModal('${student.id}', 'out', 'student')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
-            </div>
-          </td>
+      students.forEach((s, i) => {
+        const photo = s.photo ? `<img src="${s.photo}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
+                      `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`;
+        
+        html += `
+          <tr>
+            <td class="px-3 py-3 text-center">${i+1}</td>
+            <td class="px-3 py-3">${photo}</td>
+            <td class="px-4 py-3 font-semibold">${s.name}</td>
+            <td class="px-3 py-3 text-center">
+              <div class="text-green-600 font-mono">${s.in_time || '-'}</div>
+              ${s.in_signature ? `<img src="${s.in_signature}" class="h-6 mx-auto mt-1">` : ''}
+            </td>
+            <td class="px-3 py-3 text-center">
+              <div class="text-red-600 font-mono">${s.out_time || '-'}</div>
+              ${s.out_signature ? `<img src="${s.out_signature}" class="h-6 mx-auto mt-1">` : ''}
+            </td>
+            <td class="px-3 py-3 text-center no-print">
+              <div class="flex gap-x-1 justify-center">
+                <button onclick="showSignatureModal('${s.id}', 'in', 'students')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
+                <button onclick="showSignatureModal('${s.id}', 'out', 'students')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
+              </div>
+            </td>
+          </tr>
         `;
-        tbody.appendChild(row);
       });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
     }
 
-    function filterStudents() {
-      const term = document.getElementById('search-input').value.toLowerCase();
-      const filtered = students.filter(s => s.name.toLowerCase().includes(term));
-      renderStudentsTable(filtered);
-    }
-
-    // ==================== TEACHER FUNCTIONS ====================
     function renderTeachersTable() {
-      const tbody = document.getElementById('teachers-table');
-      tbody.innerHTML = '';
-      
-      teachers.forEach((teacher, index) => {
-        let photoSrc = teacher.photo || null;
+      const container = document.getElementById('main-content');
+      let html = `
+        <div class="bg-white rounded-3xl shadow border overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-center">
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">ល.រ</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">រូបថត</th>
+                <th class="px-4 py-3 border-b bg-blue-700 text-white text-left">គោត្តនាម / ឈ្មោះ</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចូល</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white">ម៉ោងចេញ</th>
+                <th class="px-3 py-3 border-b bg-blue-700 text-white no-print">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+      `;
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="px-3 py-3 text-center">${index + 1}</td>
-          <td class="px-3 py-3">
-            ${photoSrc ? 
-              `<img src="${photoSrc}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
-              `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`
-            }
-          </td>
-          <td class="px-4 py-3 font-semibold">${teacher.name}</td>
-          <td class="px-3 py-3 text-center">
-            <div class="text-green-600 font-mono">${teacher.in_time || '-'}</div>
-            ${teacher.in_signature ? `<img src="${teacher.in_signature}" class="h-6 mx-auto mt-1">` : ''}
-          </td>
-          <td class="px-3 py-3 text-center">
-            <div class="text-red-600 font-mono">${teacher.out_time || '-'}</div>
-            ${teacher.out_signature ? `<img src="${teacher.out_signature}" class="h-6 mx-auto mt-1">` : ''}
-          </td>
-          <td class="px-3 py-3 text-center no-print">
-            <div class="flex gap-x-1 justify-center">
-              <button onclick="showSignatureModal('${teacher.id}', 'in', 'teacher')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
-              <button onclick="showSignatureModal('${teacher.id}', 'out', 'teacher')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
-            </div>
-          </td>
+      teachers.forEach((t, i) => {
+        const photo = t.photo ? `<img src="${t.photo}" class="w-10 h-10 object-cover mx-auto rounded-lg border">` : 
+                      `<div class="w-10 h-10 bg-gray-200 rounded-lg mx-auto flex items-center justify-center border"><i class="fa-solid fa-user text-gray-400"></i></div>`;
+        
+        html += `
+          <tr>
+            <td class="px-3 py-3 text-center">${i+1}</td>
+            <td class="px-3 py-3">${photo}</td>
+            <td class="px-4 py-3 font-semibold">${t.name}</td>
+            <td class="px-3 py-3 text-center">
+              <div class="text-green-600 font-mono">${t.in_time || '-'}</div>
+              ${t.in_signature ? `<img src="${t.in_signature}" class="h-6 mx-auto mt-1">` : ''}
+            </td>
+            <td class="px-3 py-3 text-center">
+              <div class="text-red-600 font-mono">${t.out_time || '-'}</div>
+              ${t.out_signature ? `<img src="${t.out_signature}" class="h-6 mx-auto mt-1">` : ''}
+            </td>
+            <td class="px-3 py-3 text-center no-print">
+              <div class="flex gap-x-1 justify-center">
+                <button onclick="showSignatureModal('${t.id}', 'in', 'teachers')" class="px-2 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded">ម៉ោងចូល</button>
+                <button onclick="showSignatureModal('${t.id}', 'out', 'teachers')" class="px-2 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded">ម៉ោងចេញ</button>
+              </div>
+            </td>
+          </tr>
         `;
-        tbody.appendChild(row);
       });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
     }
 
-    function showAddTeacherModal() {
-      Swal.fire({
-        title: 'បន្ថែមគ្រូថ្មី',
-        html: `
-          <input id="teacher-name" class="swal2-input" placeholder="ឈ្មោះគ្រូ">
-          <input type="file" id="teacher-photo" class="swal2-file mt-3">
-        `,
-        confirmButtonText: 'រក្សាទុក',
-        preConfirm: () => {
-          const name = document.getElementById('teacher-name').value;
-          if (!name) {
-            Swal.showValidationMessage('សូមបញ្ចូលឈ្មោះគ្រូ');
-          }
-          return { name };
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          teachersCollection.add({
-            name: result.value.name,
-            photo: null,
-            created_at: new Date()
-          });
-          Swal.fire('ជោគជ័យ', 'គ្រូត្រូវបានបន្ថែម', 'success');
-        }
-      });
+    function showAddModal() {
+      document.getElementById('add-modal').classList.remove('hidden');
+      document.getElementById('add-modal-title').innerText = currentView === 'students' ? 'បន្ថែមសិស្សថ្មី' : 'បន្ថែមគ្រូថ្មី';
     }
 
-    // ==================== SIGNATURE SYSTEM ====================
-    let currentSigningId = null;
-    let currentSignType = null;
-    let currentType = null; // 'student' or 'teacher'
-    let signatureCanvas, ctx, isDrawing = false;
+    function closeAddModal() {
+      document.getElementById('add-modal').classList.add('hidden');
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-photo').value = '';
+    }
 
-    function showSignatureModal(id, type, collectionType) {
-      currentSigningId = id;
+    async function addNewItem() {
+      const name = document.getElementById('new-name').value.trim();
+      const photoFile = document.getElementById('new-photo').files[0];
+      if (!name) return;
+
+      const collection = currentView === 'students' ? db.collection("students") : db.collection("teachers");
+
+      if (photoFile) {
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          await collection.add({ name, photo: e.target.result, created_at: new Date() });
+          closeAddModal();
+          Swal.fire('ជោគជ័យ', 'បានបន្ថែម', 'success');
+        };
+        reader.readAsDataURL(photoFile);
+      } else {
+        await collection.add({ name, photo: null, created_at: new Date() });
+        closeAddModal();
+        Swal.fire('ជោគជ័យ', 'បានបន្ថែម', 'success');
+      }
+    }
+
+    // Signature System
+    function showSignatureModal(id, type, view) {
+      currentItemId = id;
       currentSignType = type;
-      currentType = collectionType;
-      document.getElementById('signature-modal').classList.remove('hidden');
+      currentView = view;
 
+      document.getElementById('signature-modal').classList.remove('hidden');
       const title = document.getElementById('signature-title');
       title.innerText = type === 'in' ? 'ហត្ថលេខា ម៉ោងចូល' : 'ហត្ថលេខា ម៉ោងចេញ';
 
@@ -332,34 +296,27 @@
       ctx = signatureCanvas.getContext('2d');
       ctx.strokeStyle = '#1e40af';
       ctx.lineWidth = 3;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
       ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
 
       signatureCanvas.onmousedown = startDrawing;
       signatureCanvas.onmousemove = draw;
       signatureCanvas.onmouseup = stopDrawing;
-      signatureCanvas.onmouseout = stopDrawing;
-      signatureCanvas.ontouchstart = startDrawing;
-      signatureCanvas.ontouchmove = draw;
-      signatureCanvas.ontouchend = stopDrawing;
-    }
-
-    function getMousePos(e) {
-      const rect = signatureCanvas.getBoundingClientRect();
-      return { x: (e.clientX || e.touches[0].clientX) - rect.left, y: (e.clientY || e.touches[0].clientY) - rect.top };
     }
 
     function startDrawing(e) { isDrawing = true; const pos = getMousePos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); }
     function draw(e) { if (!isDrawing) return; const pos = getMousePos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
     function stopDrawing() { isDrawing = false; }
+    function getMousePos(e) {
+      const rect = signatureCanvas.getBoundingClientRect();
+      return { x: (e.clientX || e.touches[0].clientX) - rect.left, y: (e.clientY || e.touches[0].clientY) - rect.top };
+    }
     function clearSignature() { if (ctx) ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height); }
 
     async function saveSignature() {
-      if (!currentSigningId || !signatureCanvas || !currentSignType) return;
+      if (!currentItemId || !signatureCanvas) return;
 
       const dataURL = signatureCanvas.toDataURL('image/png');
-      const collection = currentType === 'student' ? studentsCollection : teachersCollection;
+      const collection = currentView === 'students' ? db.collection("students") : db.collection("teachers");
       const now = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
       const updateData = {};
@@ -371,25 +328,47 @@
         updateData.out_signature = dataURL;
       }
 
-      await collection.doc(currentSigningId).update(updateData);
-      Swal.fire('ជោគជ័យ', 'ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក', 'success');
+      await collection.doc(currentItemId).update(updateData);
       closeSignatureModal();
+      Swal.fire('ជោគជ័យ', 'ហត្ថលេខា + ម៉ោងត្រូវបានរក្សាទុក', 'success');
     }
 
     function closeSignatureModal() {
       document.getElementById('signature-modal').classList.add('hidden');
-      currentSigningId = null;
-      currentSignType = null;
-      currentType = null;
       isDrawing = false;
     }
 
+    function printCurrentReport() {
+      const data = currentView === 'students' ? students : teachers;
+      const title = currentView === 'students' ? 'Student Attendance' : 'Teacher Attendance';
+
+      let html = `<html><head><title>${title}</title><style>body{font-family:Arial;padding:20px;}h1,h2{text-align:center;}table{width:100%;border-collapse:collapse;margin-top:20px;}th,td{border:1px solid #000;padding:8px;text-align:center;font-size:12px;}th{background:#f0f0f0;}.signature{max-height:35px;}.photo{width:35px;height:35px;object-fit:cover;border-radius:6px;}</style></head><body>`;
+      html += `<h1>វិទ្យាល័យភ្នំស្រុក</h1><h2>${title}</h2><p style="text-align:center;">${new Date().toLocaleDateString()}</p><table><thead><tr><th>ល.រ</th><th>រូបថត</th><th>ឈ្មោះ</th><th>ម៉ោងចូល</th><th>ហត្ថលេខា</th><th>ម៉ោងចេញ</th><th>ហត្ថលេខា</th></tr></thead><tbody>`;
+
+      data.forEach((item, i) => {
+        const photo = item.photo ? `<img src="${item.photo}" class="photo">` : '-';
+        const inSig = item.in_signature ? `<img src="${item.in_signature}" class="signature">` : '-';
+        const outSig = item.out_signature ? `<img src="${item.out_signature}" class="signature">` : '-';
+        html += `<tr><td>${i+1}</td><td>${photo}</td><td>${item.name}</td><td>${item.in_time || '-'}</td><td>${inSig}</td><td>${item.out_time || '-'}</td><td>${outSig}</td></tr>`;
+      });
+
+      html += `</tbody></table></body></html>`;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(html);
+      printWindow.document.close();
+      setTimeout(() => printWindow.print(), 500);
+    }
+
+    function updateDate() { document.getElementById('current-date').innerHTML = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
+    function updateLiveClock() {
+      const clock = document.getElementById('live-clock');
+      setInterval(() => { clock.innerHTML = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }); }, 1000);
+    }
+
     function init() {
-      document.getElementById('current-date').innerHTML = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-      
-      setInterval(() => {
-        document.getElementById('live-clock').innerHTML = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      }, 1000);
+      updateDate();
+      updateLiveClock();
+      switchView('students');
     }
 
     window.onload = init;

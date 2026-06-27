@@ -70,7 +70,9 @@
     <div class="bg-white rounded-3xl p-6 w-full max-w-md mx-4">
       <h3 class="text-xl font-bold mb-4 text-center" id="signature-title">ហត្ថលេខា</h3>
       <div class="border-2 border-blue-300 rounded-2xl p-2 bg-white mb-4">
-        <canvas id="signature-canvas" width="400" height="180" class="w-full touch-none border border-gray-300 rounded-xl cursor-crosshair"></canvas>
+        <canvas id="signature-canvas" width="400" height="180" 
+        class="w-full border border-gray-300 rounded-xl cursor-crosshair"
+        style="touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;"></canvas>
       </div>
       <div class="flex gap-x-3">
         <button onclick="clearSignature()" class="flex-1 py-3 bg-gray-200 hover:bg-gray-300 rounded-2xl font-medium">Clear</button>
@@ -243,34 +245,72 @@
     let signatureCanvas, ctx, isDrawing = false;
 
     function showSignatureModal(id, type, view) {
-      currentItemId = id;
-      currentSignType = type;
-      currentItemView = view;
-      document.getElementById('signature-modal').classList.remove('hidden');
+  currentItemId = id;
+  currentSignType = type;
+  currentItemView = view;
 
-      const title = document.getElementById('signature-title');
-      let session = type.includes('morning') ? 'ព្រឹក' : 'រសៀល';
-      let action = type.includes('in') ? 'ចូល' : 'ចេញ';
-      title.innerText = `ហត្ថលេខា ${session} ${action}`;
+  document.getElementById('signature-modal').classList.remove('hidden');
 
-      signatureCanvas = document.getElementById('signature-canvas');
-      ctx = signatureCanvas.getContext('2d');
-      ctx.strokeStyle = '#1e40af';
-      ctx.lineWidth = 3;
-      ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  const title = document.getElementById('signature-title');
+  let session = type.includes('morning') ? 'ព្រឹក' : 'រសៀល';
+  let action = type.includes('in') ? 'ចូល' : 'ចេញ';
+  title.innerText = `ហត្ថលេខា ${session} ${action}`;
 
-      signatureCanvas.onmousedown = startDrawing;
-      signatureCanvas.onmousemove = draw;
-      signatureCanvas.onmouseup = stopDrawing;
-    }
+  signatureCanvas = document.getElementById('signature-canvas');
+  ctx = signatureCanvas.getContext('2d');
+  ctx.strokeStyle = '#1e40af';
+  ctx.lineWidth = 3;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+
+  // Mouse events
+  signatureCanvas.onmousedown = startDrawing;
+  signatureCanvas.onmousemove = draw;
+  signatureCanvas.onmouseup = stopDrawing;
+  signatureCanvas.onmouseout = stopDrawing;
+
+  // Touch events (Improved for mobile)
+  signatureCanvas.ontouchstart = function(e) {
+    e.preventDefault();
+    startDrawing(e);
+  };
+  signatureCanvas.ontouchmove = function(e) {
+    e.preventDefault();
+    draw(e);
+  };
+  signatureCanvas.ontouchend = function(e) {
+    e.preventDefault();
+    stopDrawing();
+  };
+}
 
     function startDrawing(e) { isDrawing = true; const pos = getMousePos(e); ctx.beginPath(); ctx.moveTo(pos.x, pos.y); }
-    function draw(e) { if (!isDrawing) return; const pos = getMousePos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); }
+    function draw(e) {
+  if (!isDrawing) return;
+  e.preventDefault();                    // ← This line fixes the moving issue on phone
+  const pos = getMousePos(e);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+}
     function stopDrawing() { isDrawing = false; }
     function getMousePos(e) {
-      const rect = signatureCanvas.getBoundingClientRect();
-      return { x: (e.clientX || e.touches[0].clientX) - rect.left, y: (e.clientY || e.touches[0].clientY) - rect.top };
-    }
+  const rect = signatureCanvas.getBoundingClientRect();
+  
+  // Support both mouse and touch
+  let clientX = e.clientX;
+  let clientY = e.clientY;
+
+  if (e.touches && e.touches.length > 0) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  }
+
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  };
+}
     function clearSignature() { if (ctx) ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height); }
 
     async function saveSignature() {
